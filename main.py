@@ -1,6 +1,9 @@
-from PIL import Image, ImageSequence
+# a good portion of this was taken from my ascii to img project so check it out!! #
+# criticism is always welcome!!
+
+from PIL import Image, ImageSequence, ImageDraw
 import imageio.v2 as imageio
-import tempfile
+import shutil
 import os
 
 fileName = input("enter file name: ")
@@ -8,21 +11,20 @@ background = input("are you displaying it on a dark or light background [d,l]?\n
 gif_path = f'art/{fileName}.gif'
 img = Image.open(gif_path)
 
+w, h = img.size
+print(f'{w},{h}')
 temp_dir = './tempFolder'
+temp_dirt = './tempFolderTwo'
+
+outputDir = './artworks'
 
 os.mkdir(temp_dir)
+os.mkdir(temp_dirt) # for temp text files
 
-
-# Extract and analyze frames
+# splicing gif into several frams
 frame_number = 0
 for frame in ImageSequence.Iterator(img):
     frame_number += 1
-    # print(f"Analyzing frame {frame_number}")
-
-    # # Analyze content (simple example: print the size of the frame)
-    # print(f"Frame {frame_number} size: {frame.size}")
-
-    # You can save individual frames if needed
     frame.save(f'{temp_dir}/frame_{frame_number}.png')
 
 def brightnessCheker(rgb_color):
@@ -38,10 +40,8 @@ for filename in os.listdir(temp_dir):
     pic = imageio.imread(f'{temp_dir}/{filename}')
     currentImg = Image.open(f'{temp_dir}/{filename}')
     currentImg = currentImg.convert('RGB')
-    with open(f'artworks/{filename.split(".")[0]}.txt', 'a') as file:
-        # creates 
-        file.write("\n")
-        
+    with open(f'{temp_dirt}/{filename.split(".")[0]}.txt', 'a') as file:
+        # creates
         for h in range(pic.shape[0]):
             for w in range(pic.shape[1]):
 
@@ -50,46 +50,51 @@ for filename in os.listdir(temp_dir):
 
                 if background == 'l':
                     if light <= 50:
-                        file.write("# ")
+                        file.write("#")
                     elif light <= 75:
-                        file.write("$ ")
+                        file.write("$")
                     elif light <= 100:
-                        file.write("& ")
+                        file.write("&")
                     elif light <= 125:
-                        file.write("! ")
+                        file.write("!")
                     elif light <= 150:
-                        file.write("% ")
+                        file.write("%")
                     elif light <= 200:
-                        file.write("* ")
+                        file.write("*")
                     else:
-                        file.write("^ ")
+                        file.write("^")
 
                 if background == 'd':
                     if light <= 50:
-                        file.write(". ")
+                        file.write(".")
                     elif light <= 75:
-                        file.write("! ")
+                        file.write("!")
                     elif light <= 100:
-                        file.write("/ ")
+                        file.write("/")
                     elif light <= 125:
-                        file.write("v ")
+                        file.write("v")
                     elif light <= 150:
-                        file.write("J ")
+                        file.write("J")
                     elif light <= 200:
-                        file.write("m ")
+                        file.write("m")
                     else:
-                        file.write("# ")
+                        file.write("#")
 
             file.write("\n")
 
-# Load the GIF using imageio for more detailed metadata
-gif = imageio.get_reader(gif_path)
-print(type(gif))
-print(f"GIF Metadata: {gif.get_meta_data()}")
+shutil.rmtree(temp_dir)
+os.mkdir(temp_dir)
 
-# Analyze frame durations and overall duration
-durations = [img.info.get('duration', 100) for _ in range(img.n_frames)]
+for filename in os.listdir(temp_dirt):
+    with open(f'{temp_dirt}/{filename.split(".")[0]}.txt', 'r') as file:
+        img = Image.new('RGB', (w, h))
+        d = ImageDraw.Draw(img)
+        d.text((10,10), file.read())
+        img.save(f'{temp_dir}/{filename.split(".")[0]}ASCII.png')
 
-print(f"Frame durations: {durations}")
-total_duration = sum(durations)
-print(f"Total duration of GIF: {total_duration} ms")
+shutil.rmtree(temp_dirt)
+
+images = [imageio.imread(filename) for filename in temp_dir]
+imageio.mimsave(outputDir, images, img.info.get('duration', 100))  # duration is in seconds
+
+shutil.rmtree(temp_dir) # final delete
