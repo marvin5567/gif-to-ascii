@@ -96,14 +96,16 @@ for filename in os.listdir(temp_dirt):
         d = ImageDraw.Draw(meow)
         font = ImageFont.truetype('monocraft.ttf', 12)
         d.text((0,0), f, font=font)
-        img.save(f'{temp_dir}/{filename.split(".")[0]}ASCII.png')
+        meow.save(f'{temp_dir}/{filename.split(".")[0]}ASCII.png')
 
 shutil.rmtree(temp_dirt)
 
-durations = [img.info.get('duration', 100) for _ in range(img.n_frames)]
-gifDuration = int(durations[0])/1000
+# Ensure the durations match the number of frames
+durations = [img.info.get('duration', 100) for _ in range(len(os.listdir(temp_dir)))]
+durations = [d / 1000 for d in durations]  # Convert from milliseconds to seconds
 
-images = [imageio.imread(os.path.join(temp_dir, filename)) for filename in os.listdir(temp_dir)]
-imageio.mimsave(os.path.join(outputDir, f'{fileName}ASCII.gif'), images, format='GIF', duration=gifDuration)  # duration is in seconds
+images = [imageio.imread(os.path.join(temp_dir, filename)) for filename in sorted(os.listdir(temp_dir))]
+
+imageio.mimsave(os.path.join(outputDir, f'{fileName}ASCII.gif'), images, format='GIF', duration=durations)  # duration is in seconds
 
 shutil.rmtree(temp_dir) # final delete
