@@ -1,7 +1,7 @@
 # a good portion of this was taken from my ascii to img project so check it out!! #
 # criticism is always welcome!!
 
-from PIL import Image, ImageSequence, ImageDraw
+from PIL import Image, ImageSequence, ImageDraw, ImageFont
 import imageio.v2 as imageio
 import shutil
 import os
@@ -87,14 +87,23 @@ os.mkdir(temp_dir)
 
 for filename in os.listdir(temp_dirt):
     with open(f'{temp_dirt}/{filename.split(".")[0]}.txt', 'r') as file:
-        img = Image.new('RGB', (w, h))
-        d = ImageDraw.Draw(img)
-        d.text((10,10), file.read())
+        f = file.read()
+        lines = f.split('\n')
+        numLines = len(lines)
+        maxLineLen = max(len(line) for line in lines)
+
+        meow = Image.new('RGB', (maxLineLen * 6, numLines * 12))
+        d = ImageDraw.Draw(meow)
+        font = ImageFont.truetype('monocraft.ttf', 12)
+        d.text((0,0), f, font=font)
         img.save(f'{temp_dir}/{filename.split(".")[0]}ASCII.png')
 
 shutil.rmtree(temp_dirt)
 
-images = [imageio.imread(filename) for filename in temp_dir]
-imageio.mimsave(outputDir, images, img.info.get('duration', 100))  # duration is in seconds
+durations = [img.info.get('duration', 100) for _ in range(img.n_frames)]
+gifDuration = int(durations[0])/1000
+
+images = [imageio.imread(os.path.join(temp_dir, filename)) for filename in os.listdir(temp_dir)]
+imageio.mimsave(os.path.join(outputDir, f'{fileName}ASCII.gif'), images, format='GIF', duration=gifDuration)  # duration is in seconds
 
 shutil.rmtree(temp_dir) # final delete
