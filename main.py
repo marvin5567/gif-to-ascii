@@ -100,9 +100,9 @@ for filename in os.listdir(temp_dirt):
 
 shutil.rmtree(temp_dirt)
 
-# Ensure the durations match the number of frames
+
 durations = [img.info.get('duration', 100) for _ in range(len(os.listdir(temp_dir)))]
-durations = [d / 1000 for d in durations]  # Convert from milliseconds to seconds
+durations = [d / 1000 for d in durations] 
 
 images = [imageio.imread(os.path.join(temp_dir, filename)) for filename in sorted(os.listdir(temp_dir))]
 
